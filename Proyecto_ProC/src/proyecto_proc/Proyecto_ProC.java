@@ -4,17 +4,27 @@
  */
 package proyecto_proc;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+
 /**
  *
  * @author yorvi
  */
+
+
 public class Proyecto_ProC {
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        // TODO code application logic here
+        Menu men = new Menu();
+        men.setLocationRelativeTo(null);
+        men.setVisible(true);
     }
     
 }
