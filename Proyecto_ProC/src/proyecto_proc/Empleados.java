@@ -14,35 +14,133 @@ import javax.swing.JLabel;
 import java.sql.*;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import java.util.Arrays;
 
 /**
  *
  * @author yorvi
  */
 public class Empleados extends javax.swing.JFrame {
-    
-    DefaultTableModel Jdatos;
-    
+
     Empleado con1 = new Empleado();
+
     Connection conet;
+
     Statement st;
+    DefaultTableModel Jdatos = new DefaultTableModel();
     ResultSet rs;
-    
+    public int nivel = 0;
     int idc;
-    
+
     public Empleados() {
-        
+
         initComponents();
         
-        consultar();
+        Jdatos.addColumn("Nivel");
+        Jdatos.addColumn("Nombre");
+        Jdatos.addColumn("Edad");
+        Jdatos.addColumn("Puesto");
+        Jdatos.addColumn("Salario");
+        
+        Tabla.setModel(Jdatos);
+        
+        ver();
+    }
+
+    void ver() {
+        
+        Object[] Datos = new Object[5];
+
+        try {
+            conet = con1.getConnection();
+            st = conet.createStatement();
+            rs = st.executeQuery("SELECT * FROM empleados");
+
+            while (rs.next()) {
+
+                Datos[0] = rs.getInt("Nivel");
+                Datos[1] = rs.getString("Nombre");
+                Datos[2] = rs.getInt("Edad");
+                Datos[3] = rs.getString("Puesto");
+                Datos[4] = rs.getInt("Pago");
+
+                Jdatos.addRow(Datos);
+
+            }
+            Tabla.setModel(Jdatos);
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error en la consulta");
+        }
+
+    }
+
+    void agregarEmpleado() {
+        
+        try {
+        conet = con1.getConnection();
+        st = conet.createStatement();
+        rs = st.executeQuery("SELECT MAX(Nivel) FROM empleados");
+
+        if (rs.next()) {
+            nivel = rs.getInt(1) + 1;
+        }
+
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(null, "Error al obtener el valor máximo de nivel");
+        e.printStackTrace();
+    }
+
+        
+        String nombre = JOptionPane.showInputDialog("Coloque el nombre del empleado");
+        int edad = Integer.parseInt(JOptionPane.showInputDialog("Coloque la edad del empleado"));
+        String puesto = JOptionPane.showInputDialog("Coloque el Puesto del empleado");
+        int salario = Integer.parseInt(JOptionPane.showInputDialog("Coloque el salario del empleado"));
+        
+        try {
+            
+            String sql = "INSERT INTO empleados (Nivel, Nombre, Edad, Puesto, Pago) VALUES ('" + nivel + "','" + nombre + "','" + edad + "','" + puesto + "','"+ "" + salario + "')";
+            System.out.println(sql);
+            conet = con1.getConnection();
+            st = conet.createStatement();
+            st.executeUpdate(sql);
+
+            JOptionPane.showMessageDialog(null, "Empleado ingresado con exito");
+            LimpiarTabla();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "No se pudo ingresar el empleado" + e);
+            e.printStackTrace();
+        } 
     }
     
+    void LimpiarTabla(){
+        
+        for (int i = 0; i < Tabla.getRowCount(); i++) {
+            Jdatos.removeRow(i);
+            i = i-1;
+        }
+    }
     
+    void EliminarEmpleado(){
         
+        int filaSeleccionada = Tabla.getSelectedRow();
         
-        
-        
-    
+        if (filaSeleccionada == -1){
+            
+            JOptionPane.showMessageDialog(null, "Por favor seleccione una fila para eliminar");
+        } else{
+            int nivelSeleccionado = (int) Tabla.getValueAt(filaSeleccionada, 0);
+            try {
+                conet = con1.getConnection();
+                st = conet.createStatement();
+                String sql = "DELETE FROM empleados WHERE Nivel = " + nivelSeleccionado;
+                st.executeUpdate(sql);
+                JOptionPane.showMessageDialog(null, "Empleado eliminado con éxito");
+                LimpiarTabla();
+            } catch (Exception e) {
+            }
+        }
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -74,8 +172,9 @@ public class Empleados extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
         jButton7 = new javax.swing.JButton();
         jButton6 = new javax.swing.JButton();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        JDatos = new javax.swing.JTable();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        Tabla = new javax.swing.JTable();
+        B_Borrar = new javax.swing.JButton();
 
         jMenu1.setText("jMenu1");
 
@@ -183,10 +282,10 @@ public class Empleados extends javax.swing.JFrame {
                 .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(68, 68, 68)
                 .addComponent(jButton5, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(86, Short.MAX_VALUE))
+                .addContainerGap(96, Short.MAX_VALUE))
         );
 
-        background.add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 160, 620));
+        background.add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 160, 630));
 
         jPanel2.setBackground(new java.awt.Color(0, 36, 72));
         jPanel2.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -199,6 +298,8 @@ public class Empleados extends javax.swing.JFrame {
         jPanel2.add(jTextField1, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 30, 156, 26));
         jTextField1.getAccessibleContext().setAccessibleName("");
 
+        jSeparator1.setBackground(new java.awt.Color(255, 255, 255));
+        jSeparator1.setForeground(new java.awt.Color(255, 255, 255));
         jPanel2.add(jSeparator1, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 60, 156, 10));
 
         jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/proyecto_proc/imagenes/lupa (1).png"))); // NOI18N
@@ -224,6 +325,7 @@ public class Empleados extends javax.swing.JFrame {
         jButton7.setBackground(new java.awt.Color(255, 255, 255));
         jButton7.setIcon(new javax.swing.ImageIcon(getClass().getResource("/proyecto_proc/imagenes/deshacer.png"))); // NOI18N
         jButton7.setBorder(null);
+        jButton7.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         jButton7.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton7ActionPerformed(evt);
@@ -241,22 +343,65 @@ public class Empleados extends javax.swing.JFrame {
                 jButton6ActionPerformed(evt);
             }
         });
-        background.add(jButton6, new org.netbeans.lib.awtextra.AbsoluteConstraints(750, 190, -1, 40));
+        background.add(jButton6, new org.netbeans.lib.awtextra.AbsoluteConstraints(850, 220, -1, 40));
 
-        JDatos.setModel(new javax.swing.table.DefaultTableModel(
+        Tabla.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null}
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+                "Nivel", "Nombre", "Edad", "Puesto", "Salario"
             }
-        ));
-        jScrollPane3.setViewportView(JDatos);
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false
+            };
 
-        background.add(jScrollPane3, new org.netbeans.lib.awtextra.AbsoluteConstraints(230, 180, -1, -1));
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        Tabla.setShowGrid(true);
+        Tabla.setSurrendersFocusOnKeystroke(true);
+        Tabla.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                TablaMouseClicked(evt);
+            }
+        });
+        jScrollPane2.setViewportView(Tabla);
+
+        background.add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 180, 570, -1));
+
+        B_Borrar.setBackground(new java.awt.Color(255, 255, 255));
+        B_Borrar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/proyecto_proc/imagenes/quitar-usuario (1).png"))); // NOI18N
+        B_Borrar.setText("   Eliminar Empleado");
+        B_Borrar.setBorder(null);
+        B_Borrar.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        B_Borrar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                B_BorrarActionPerformed(evt);
+            }
+        });
+        background.add(B_Borrar, new org.netbeans.lib.awtextra.AbsoluteConstraints(830, 320, 180, 40));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -266,7 +411,7 @@ public class Empleados extends javax.swing.JFrame {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(background, javax.swing.GroupLayout.DEFAULT_SIZE, 629, Short.MAX_VALUE)
+            .addComponent(background, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         pack();
@@ -285,9 +430,21 @@ public class Empleados extends javax.swing.JFrame {
 
     private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
         //agregar empleado
-        agregarDatos();
+        agregarEmpleado();
+        ver();
         
+
     }//GEN-LAST:event_jButton6ActionPerformed
+
+    private void TablaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TablaMouseClicked
+        // TODO add your handling code here:
+    }//GEN-LAST:event_TablaMouseClicked
+
+    private void B_BorrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_B_BorrarActionPerformed
+        // TODO add your handling code here:
+        EliminarEmpleado();
+        ver();
+    }//GEN-LAST:event_B_BorrarActionPerformed
 
     /**
      * @param args the command line arguments
@@ -317,6 +474,7 @@ public class Empleados extends javax.swing.JFrame {
         //</editor-fold>
         //</editor-fold>
 
+
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -324,63 +482,11 @@ public class Empleados extends javax.swing.JFrame {
             }
         });
     }
-    
-    // metodos 
-    
-    void consultar(String nombre, int edad, String puesto){
-        
-        String sql = "select * from empleado codigo=?";
-        
-        try{
-            
-            conet = con1.getConnection();
-            st = conet.createStatement();
-            rs= st.executeQuery(sql);
-            Object[] Empleados = new Object[3];
-            
-            Jdatos = (DefaultTableModel) JDatos.getModel();
-            
-            while (rs.next()){
-                Empleados [0] = rs.getString("Nombre");
-                Empleados [1] = rs.getInt("Edad");
-                Empleados [2] = rs.getString("Puesto");
-                
-                Jdatos.addRow(Empleados);
-            }
-            JDatos.setModel(Jdatos);
-            
-        
-        } catch (Exception e){
-            
-        }
-    }
-    
-    public void agregarDatos(){
-        String nombre = JOptionPane.showInputDialog("Coloque el Nombre");
-        int edad = Integer.parseInt(JOptionPane.showInputDialog("Coloque la edad"));
-        String puesto = JOptionPane.showInputDialog("Coloque el Puesto");
-        
-        try{
-            
-            String sql = "Insert into empelado(Nombre,Edad,Puesto) values ('"+nombre+"','"+edad+"','"+puesto+"')";
-            
-            conet = con1.getConnection();
-            st = conet.createStatement();
-            st.executeUpdate(sql);
-            
-            JOptionPane.showMessageDialog(null, "Empleado agregado con exito");
-            
-            
-        } catch (Exception e){
-            
-        }
-    }
-    
-    
-    
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTable JDatos;
+    private javax.swing.JButton B_Borrar;
+    private javax.swing.JTable Tabla;
     private javax.swing.JPanel background;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
@@ -398,7 +504,7 @@ public class Empleados extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTable jTable1;
     private javax.swing.JTextField jTextField1;
